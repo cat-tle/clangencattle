@@ -801,7 +801,7 @@ class Patrol():
         idx = 0
         prey_size = ["very_small", "small", "medium", "large", "huge"]
         for amount in PATROL_BALANCE[biome][season]:
-            possible_prey_size.extend(repeat(prey_size[idx],amount))
+            possible_prey_size.extend(repeat(prey_size[idx], amount))
             idx += 1
         chosen_prey_size = choice(possible_prey_size)
         print(f"chosen filter prey size: {chosen_prey_size}")
@@ -813,8 +813,7 @@ class Patrol():
                     # get the amount of class sizes which can be increased
                     increment = int(adaption.split("_")[0])
                     new_idx = prey_size.index(chosen_prey_size) + increment
-                    # check that the increment does not lead to a overflow
-                    new_idx = new_idx if new_idx <= len(chosen_prey_size) else len(chosen_prey_size)
+                    new_idx = min(new_idx, len(prey_size) - 1)
                     chosen_prey_size = prey_size[new_idx]
 
             # now count the outcomes + prey size
@@ -832,17 +831,17 @@ class Patrol():
             # get the prey size with the most outcomes
             most_prey_size = ""
             max_occurrences = 0
-            for prey_size, amount in prey_types.items():
+            for p, amount in prey_types.items():
                 if amount >= max_occurrences and most_prey_size != chosen_prey_size:
-                    most_prey_size = prey_size
+                    most_prey_size = p
 
+            most_prey_size, max_occurrences = max(prey_types.items(), key=lambda x: x[1], default=(None, 0))
             if chosen_prey_size == most_prey_size:
                 filtered_patrols.append(patrol)
 
-        # if the filtering results in an empty list, don't filter and return whole possible patrols
-        if len(filtered_patrols) <= 0:
+        if not filtered_patrols:
             print("---- WARNING ---- filtering to balance out the hunting, didn't work.")
-            filtered_patrols = possible_patrols
+            return possible_patrols
         return filtered_patrols
 
     def get_patrol_art(self) -> pygame.Surface:
